@@ -5,7 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { UpdateTableModal } from "../components/updateTableModal";
+import { UpdateTableModal } from "../components/UpdateTableModal";
 import { Navbar } from "../components/Navbar";
 
 export const Homepage = () => {
