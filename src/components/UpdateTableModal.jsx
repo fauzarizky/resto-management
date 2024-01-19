@@ -49,6 +49,16 @@ export const UpdateTableModal = ({ isOpen, onClose, data, updateData, adminEmail
           isClosable: true,
         });
       }
+      
+      if (name.trim() === "") {
+        return toast({
+          title: "Error",
+          description: "Name cannot be empty",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
 
       const tableDoc = doc(db, "tableLists", id);
       const newData = {
@@ -101,7 +111,7 @@ export const UpdateTableModal = ({ isOpen, onClose, data, updateData, adminEmail
         status: "success",
         duration: 3000,
         isClosable: true,
-      })
+      });
     } catch (error) {
       console.error(error);
       toast({
@@ -147,7 +157,7 @@ export const UpdateTableModal = ({ isOpen, onClose, data, updateData, adminEmail
 
               <FormControl isRequired>
                 <FormLabel>Number of People</FormLabel>
-                <Input type="number" placeholder="Input Number of People" min={1} onChange={(e) => setNumberPeople(e.target.value)} />
+                <Input inputMode="numeric" pattern="[1-9]*" placeholder="Input Number of People" min={1} onChange={(e) => setNumberPeople(e.target.value)} />
               </FormControl>
             </Box>
           )}
