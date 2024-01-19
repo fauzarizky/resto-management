@@ -1,4 +1,4 @@
-import { Table, Thead, Tbody, Tr, Th, Td, TableContainer, Box, Input, Select, Button, Text } from "@chakra-ui/react";
+import { Table, Thead, Tbody, Tr, Th, Td, TableContainer, Box, Input, Select, Button, Text, Spinner, useToast } from "@chakra-ui/react";
 import { Navbar } from "../components/Navbar";
 import { useEffect, useRef, useState } from "react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
@@ -13,7 +13,9 @@ export const Report = () => {
   const [order, setOrder] = useState("desc");
   const [search, setSearch] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
   const debouncedSearchInput = useDebounceValue(search, 500);
+  const toast = useToast();
 
   const reportCollectionRef = collection(db, "report");
 
@@ -49,14 +51,33 @@ export const Report = () => {
   };
 
   const getAllReports = async () => {
-    let q = query(reportCollectionRef, orderBy(sort || "createdAt", order || "desc"));
+    try {
+      let q = query(reportCollectionRef, orderBy(sort || "createdAt", order || "desc"));
 
-    if (debouncedSearchInput !== "") {
-      q = query(reportCollectionRef, where("name", "==", search));
+      if (debouncedSearchInput !== "") {
+        q = query(reportCollectionRef, where("name", "==", search));
+      }
+
+      const data = await getDocs(q);
+      setReports(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
+  };
 
-    const data = await getDocs(q);
-    setReports(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+  const handleRefreshData = () => {
+    setIsLoading(true);
+    getAllReports();
   };
 
   useEffect(() => {
@@ -67,9 +88,9 @@ export const Report = () => {
     <Box>
       <Navbar />
       <Box mx={{ base: 3, md: 2 }}>
-        <Box h={{base: "15vh", md: "10vh"}} display={"flex"} flexDir={{ base: "column", md: "row" }} justifyContent={"space-between"} alignItems={"center"} gap={2} my={{ base: 2, md: 0 }} >
+        <Box h={{ base: "15vh", md: "10vh" }} display={"flex"} flexDir={{ base: "column", md: "row" }} justifyContent={"space-between"} alignItems={"center"} gap={2} my={{ base: 2, md: 0 }}>
           <Input placeholder="Search customer name" w={{ base: "100%", md: "20%" }} onChange={(e) => setSearch(e.target.value)} />
-          <Box display={"flex"} gap={5} w={{ base: "100%", md: "40%" }}>
+          <Box display={"flex"} gap={5} w={{ base: "100%", md: "45%" }}>
             <Select placeholder="Sort By" w={"30%"} cursor={"pointer"} onChange={(e) => setSort(e.target.value)}>
               <option value={"createdAt"}>Created At</option>
               <option value={"tableType"}>Table Type</option>
@@ -86,6 +107,12 @@ export const Report = () => {
             </Button>
             <Button onClick={convertToPdf} w={"30%"} colorScheme="red" display={{ base: "flex", lg: "none" }}>
               Export
+            </Button>
+            <Button onClick={handleRefreshData} w={"30%"} colorScheme="red" display={{ base: "none", lg: "flex" }}>
+              Refresh Data
+            </Button>
+            <Button onClick={handleRefreshData} w={"30%"} colorScheme="red" display={{ base: "flex", lg: "none" }}>
+              Refresh
             </Button>
           </Box>
         </Box>
@@ -104,7 +131,13 @@ export const Report = () => {
               </Tr>
             </Thead>
 
-            {currentReports?.length !== 0 ? (
+            {isLoading ? (
+              <Tr>
+                <Td colSpan={8} textAlign="center">
+                  <Spinner />
+                </Td>
+              </Tr>
+            ) : currentReports?.length !== 0 ? (
               <Tbody>
                 {currentReports?.map((report) => (
                   <Tr key={report?.id}>
@@ -130,7 +163,7 @@ export const Report = () => {
             )}
           </Table>
         </TableContainer>
-        <Box h={"10vh"} w={"100%"} display={"flex"} justifyContent={"space-between"} alignItems={"center"} >
+        <Box h={"10vh"} w={"100%"} display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
           <Button onClick={() => paginate(currentPage - 1)} isDisabled={currentPage === 1} colorScheme="red" color={"white"}>
             Prev
           </Button>

@@ -14,7 +14,7 @@ export const Register = () => {
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
-      if (email && password) {
+      if (email && password && password.length >= 6) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
         if (userCredential) {
@@ -27,6 +27,14 @@ export const Register = () => {
           });
           navigate("/");
         }
+      } else {
+        toast({
+          title: "Error",
+          description: "Password must be at least 6 characters",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       }
     } catch (error) {
       console.error(error);
