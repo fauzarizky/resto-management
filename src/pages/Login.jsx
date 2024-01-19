@@ -4,12 +4,31 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { auth } from "../../firebase-config";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 export const Login = () => {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const navigate = useNavigate();
   const toast = useToast();
+
+  const handleSignInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+
+      navigate("/homepage");
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     try {
@@ -66,7 +85,7 @@ export const Login = () => {
                 <Input type="password" placeholder="Enter your password" border={"1px solid black"} h={"5vh"} w={"70%"} px={2} onChange={(e) => setPassword(e.target.value)} />
               </FormControl>
 
-              <Button type="submit" bgColor={"#9A031E"} _hover={{bgColor: "#5F0F40"}} color={"white"} w={"70%"} p={2} fontSize={"lg"} borderRadius={"lg"}>
+              <Button type="submit" bgColor={"#9A031E"} _hover={{ bgColor: "#5F0F40" }} color={"white"} w={"70%"} p={2} fontSize={"lg"} borderRadius={"lg"}>
                 Login
               </Button>
             </form>
@@ -74,6 +93,9 @@ export const Login = () => {
             <Heading fontSize={"md"}>Dont have an account ?</Heading>
             <Button onClick={() => navigate("/register")} border={"1px solid #9A031E"} bgColor={"white"} color={"#9A031E"} w={"70%"} p={2} fontSize={"lg"} borderRadius={"lg"}>
               Register
+            </Button>
+            <Button onClick={handleSignInWithGoogle} border={"1px solid #9A031E"} bgColor={"white"} color={"#9A031E"} w={"70%"} p={2} fontSize={"lg"} borderRadius={"lg"}>
+              Sign In with Google
             </Button>
           </Box>
         </Box>
