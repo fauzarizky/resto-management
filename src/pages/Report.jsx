@@ -2,9 +2,11 @@ import { Table, Thead, Tbody, Tr, Th, Td, TableContainer, Box, Input, Select, Bu
 import { Navbar } from "../components/Navbar";
 import { useEffect, useRef, useState } from "react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
-import { db } from "../../firebase-config";
+import { auth, db } from "../../firebase-config";
 import { useDebounceValue } from "../hooks/useDebounceValue";
 import html2pdf from "html2pdf.js";
+import { onAuthStateChanged } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 export const Report = () => {
   const [reports, setReports] = useState();
@@ -16,6 +18,7 @@ export const Report = () => {
   const [isLoading, setIsLoading] = useState(true);
   const debouncedSearchInput = useDebounceValue(search, 500);
   const toast = useToast();
+  const navigate = useNavigate();
 
   const reportCollectionRef = collection(db, "report");
 
@@ -84,6 +87,21 @@ export const Report = () => {
     getAllReports();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, sort, order, debouncedSearchInput, itemsPerPage]);
+
+  useEffect(() => {
+    const listen = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate("/");
+      }
+    });
+
+    // Cleanup function
+    return () => {
+      listen();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
   return (
     <Box>
       <Navbar />
