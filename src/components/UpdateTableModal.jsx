@@ -157,7 +157,7 @@ export const UpdateTableModal = ({ isOpen, onClose, data, updateData, adminEmail
 
               <FormControl isRequired>
                 <FormLabel>Number of People</FormLabel>
-                <Input inputMode="numeric" pattern="[1-9]*" placeholder="Input Number of People" min={1} onChange={(e) => setNumberPeople(e.target.value)} />
+                <Input type="number" inputMode="numeric" pattern="[1-9]*" placeholder="Input Number of People" min={1} onChange={(e) => setNumberPeople(e.target.value)} />
               </FormControl>
             </Box>
           )}
